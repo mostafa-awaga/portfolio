@@ -25,13 +25,15 @@
       else if (rand < 0.97) size = 1.5 + Math.random() * 0.8;   // large
       else size = 2.3 + Math.random() * 1.0;                     // bright
 
-      // Slight color tint for realism (warm white, cool blue-white)
+      // Slight color tint for realism (warm white, cool blue-white, accent touches)
       const tints = [
         { r: 255, g: 255, b: 255 },   // pure white
         { r: 220, g: 230, b: 255 },   // cool blue-white
         { r: 255, g: 248, b: 230 },   // warm yellow-white
         { r: 200, g: 220, b: 255 },   // icy blue
         { r: 255, g: 240, b: 220 },   // warm gold
+        { r: 180, g: 160, b: 255 },   // subtle purple (accent hint)
+        { r: 140, g: 220, b: 255 },   // subtle cyan (accent hint)
       ];
       const tint = tints[Math.floor(Math.random() * tints.length)];
 
@@ -224,6 +226,62 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     const x = (e.clientX / window.innerWidth - 0.5) * 12;
     const y = (e.clientY / window.innerHeight - 0.5) * 12;
     heroImg.style.transform = `translate(${x}px, ${y}px)`;
+  });
+})();
+
+/* ========== COUNTER ANIMATION FOR STATS ========== */
+(function initCounters() {
+  const counters = document.querySelectorAll('.stat-number[data-target]');
+  if (!counters.length) return;
+
+  const animateCounter = (el) => {
+    const target = parseInt(el.dataset.target, 10);
+    const duration = 1800; // ms
+    const startTime = performance.now();
+
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease out cubic for smooth deceleration
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(eased * target);
+
+      el.textContent = current;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      }
+    }
+
+    requestAnimationFrame(update);
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  counters.forEach(counter => observer.observe(counter));
+})();
+
+/* ========== SCROLL TO TOP ========== */
+(function initScrollTop() {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+
+  // Show/hide based on scroll position
+  window.addEventListener('scroll', () => {
+    btn.classList.toggle('visible', window.scrollY > 600);
+  });
+
+  // Smooth scroll to top on click
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 })();
 
